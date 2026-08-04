@@ -174,8 +174,7 @@ export default class JackTokenizer {
    * wenn tokenType = 'INT_CONST'.
    */
   get intVal(): number {
-    // TODO: Gib den aktuellen Integer-Wert zurück.
-    throw new Error('TODO: intVal implementieren.');
+    return parseInt(this.current_token!);
   }
 
   /**
