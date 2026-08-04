@@ -154,7 +154,7 @@ export default class CompilationEngine {
     this.compileParameterList()
 
     // )
-    if (this.tokenizer.current_token != ')'){
+    if (this.tokenizer.current_token != ')') {
       throw new Error('SubroutineDec: erwartet ")".')
     }
     this.write("<symbol> ) </symbol>\n")
@@ -162,7 +162,7 @@ export default class CompilationEngine {
     // subroutineBody
     // {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
-    if (this.tokenizer.current_token != '{'){                     // Subroutine Body
+    if (this.tokenizer.current_token != '{') {                     // Subroutine Body
       throw new Error('SubroutineDec: erwartet "{".')
     }
     this.write("<subroutineBody>\n<symbol> { </symbol>\n")
@@ -183,8 +183,8 @@ export default class CompilationEngine {
       throw new Error('SubroutineDec: erwartet "}".')
     }
     this.write("<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>\n")        // Ende subroutineBody, Ende subroutineDec                // }
-    
-    
+
+
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
   }
 
@@ -279,7 +279,27 @@ export default class CompilationEngine {
   /** Kompiliert eine Folge von Statements ohne die umschliessenden geschweiften Klammern. */
   compileStatements(): void {
     // TODO: Wähle anhand des Keywords die passende compileXxx-Methode.
-    throw new Error('TODO: compileStatements implementieren.');
+    while (this.tokenizer.tokenType === 'KEYWORD') {
+      switch (this.tokenizer.keyWord) {
+        case "DO": {
+          this.compileDo();
+        }
+        case "LET": {
+          this.compileLet();
+        }
+        case "WHILE": {
+          this.compileWhile();
+        }
+        case "RETURN": {
+          this.compileReturn();
+        }
+        case "IF": {
+          this.compileIf();
+        }
+      }
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      else break; // ansonsten: Gefahr der Endlosschleife
+    }
   }
 
   /** Kompiliert ein `do`-Statement. */
