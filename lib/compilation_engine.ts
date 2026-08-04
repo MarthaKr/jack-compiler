@@ -330,7 +330,47 @@ export default class CompilationEngine {
   /** Kompiliert ein `let`-Statement. */
   compileLet(): void {
     // TODO: Folge der Grammatik für `letStatement`.
-    throw new Error('TODO: compileLet implementieren.');
+    this.write("<letStatement>\n<keyword> var </keyword>\n")
+
+    // varName
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+      throw new Error('letStatement: erwartet "varName".')
+    }
+    this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+    
+
+    // expression ?
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.current_token === '[') {
+      this.write("<symbol> [ </symbol>\n")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+      //call expression
+      this.compileExpression()
+      if (this.tokenizer.current_token === ']') {
+        this.write("<symbol> ] </symbol>\n")
+      }
+    }
+    
+    // =
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.current_token === '=') {
+      this.write("<symbol> = </symbol>\n")
+    }
+    else{
+      throw new Error('letStatement: erwartet "=".')
+    }
+
+    // call expression
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    this.compileExpression()
+
+    // ;
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.current_token != ';') {
+      throw new Error('letStatement: erwartet ";".')
+    }
+    this.write("<symbol> ; <s/ymbol>\n</letStatement>\n")
   }
 
   /** Kompiliert ein `while`-Statement. */
