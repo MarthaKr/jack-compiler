@@ -154,6 +154,7 @@ export default class CompilationEngine {
     this.compileParameterList()
 
     // )
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     if (this.tokenizer.current_token != ')') {
       throw new Error('SubroutineDec: erwartet ")".')
     }
