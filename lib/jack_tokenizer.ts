@@ -159,7 +159,8 @@ export default class JackTokenizer {
    */
   get symbol(): string {
     // TODO: Gib das aktuelle Symbol zurück.
-    throw new Error('TODO: symbol implementieren.');
+    return this.current_token!
+   
   }
 
   /**
@@ -168,7 +169,7 @@ export default class JackTokenizer {
    */
   get identifier(): string {
     // TODO: Gib den aktuellen Identifier zurück.
-    throw new Error('TODO: identifier implementieren.');
+    return this.current_token!
   }
 
   /**
