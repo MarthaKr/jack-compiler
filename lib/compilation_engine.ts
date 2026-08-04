@@ -154,7 +154,7 @@ export default class CompilationEngine {
     this.compileParameterList()
 
     // )
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     if (this.tokenizer.current_token != ')') {
       throw new Error('SubroutineDec: erwartet ")".')
     }
@@ -179,7 +179,7 @@ export default class CompilationEngine {
     this.compileStatements()                                      // statements
 
     // }
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance 
+    //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance 
     if (this.tokenizer.current_token != '}') {                     // 
       throw new Error('SubroutineDec: erwartet "}".')
     }
@@ -323,6 +323,9 @@ export default class CompilationEngine {
     // )
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error("doStatement: schließende Klammer erwartet")
     this.write("<symbol> ) </symbol>\n");
+
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ';') throw new Error("doStatement: Semmikolon fehlt")
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
     this.write("</doStatement>")
