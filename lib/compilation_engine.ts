@@ -230,8 +230,50 @@ export default class CompilationEngine {
 
   /** Kompiliert eine lokale `var`-Deklaration. */
   compileVarDec(): void {
-    // TODO: Folge der Grammatik für `varDec`.                  // muss advance!!
-    throw new Error('TODO: compileVarDec implementieren.');
+    // TODO: Folge der Grammatik für `varDec`.        // muss advance!!
+    
+    // 'var'
+    this.write("<keyWord> var </keyword>\n")  
+    
+    // type
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    if (!this.isType()) {
+      throw new Error('VarDec: kein type.')
+    }
+    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    
+    // varName
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+      this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+    }
+
+    // mehr varName
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    while (this.tokenizer.current_token == ',') {
+      this.write("<symbol> , </symbol>\n")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+      if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+        this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+      }
+    }
+
+    // ;
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    if (this.tokenizer.current_token == ';') {
+      this.write("<symbol> ; </symbol>\n") 
+    }
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+  }
+
+
+
+
+    
+    
+    throw new Error('TODO: compileVarDec implementieren.');// muss advance!!
+    
+    
   }
 
   /** Kompiliert eine Folge von Statements ohne die umschliessenden geschweiften Klammern. */
