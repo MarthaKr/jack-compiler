@@ -48,6 +48,7 @@ export default class JackTokenizer {
     let jetzt = this.cursor;
     let laenge: number
     laenge = this.content.length;
+    if (jetzt >= laenge) return false;
     while (this.content[jetzt] === ' ') {
       if ((jetzt + 1) < laenge) {
         jetzt += 1;
