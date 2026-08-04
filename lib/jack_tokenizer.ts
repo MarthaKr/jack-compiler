@@ -45,6 +45,20 @@ export default class JackTokenizer {
    */
   hasMoreTokens(): Boolean {
     // TODO: Überspringe Leerzeichen und prüfe, ob danach noch Inhalt folgt.
+    let jetzt = this.cursor;
+    let laenge : number
+    laenge = this.content.length;
+    while (this.content[jetzt] === ' ') {
+      if ((jetzt + 1) < laenge){
+        jetzt += 1;
+      }
+      else if ((jetzt + 1) >=  laenge) {
+        return false
+      }
+    }
+    if (this.content[jetzt] != ' ') {
+      return true
+    }
     return false;
   }
 
