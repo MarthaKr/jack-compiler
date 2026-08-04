@@ -124,6 +124,61 @@ export default class CompilationEngine {
   /** Kompiliert eine vollständige `constructor`-, `function`- oder `method`-Deklaration. */
   compileSubroutine(): void {
     // TODO: Folge der Grammatik für `subroutineDec`.
+
+    this.write("<subroutineDec>\n");
+    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    if ((!this.isType()) && (this.tokenizer.current_token != 'void')) {
+      throw new Error('SubroutineDec: kein type.')
+    }
+    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
+    if (this.tokenizer.tokenType != 'IDENTIFIER') {
+      throw new Error("SubroutineDec: kein subroutineName")
+    }
+    this.write("<string constant>" + this.tokenizer.current_token + "</string constant>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
+    if (this.tokenizer.current_token != '('){
+      throw new Error('SubroutineDec: erwartet "(".')
+    }
+    this.write("<symbol> ( </symbol>\n")
+
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    this.compileParameterList()
+    if (this.tokenizer.current_token != ')'){
+      throw new Error('SubroutineDec: erwartet ")".')
+    }
+    this.write("<symbol> ) </symbol>\n")
+    
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    
+
+
+
+    if (this.tokenizer.current_token != '{'){                     // Subroutine Body
+      throw new Error('SubroutineDec: erwartet "{".')
+    }
+    this.write("<subroutineBody>\n<symbol> { </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    while (this.tokenizer.current_token == 'var') { 
+      this.compileVarDec()
+      //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
+    }
+    this.compileStatements()                                      // statements
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance 
+    if (this.tokenizer.current_token != '}'){                     // 
+      throw new Error('SubroutineDec: erwartet "}".')
+    }
+    this.write("<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>\n")        // Ende subroutineBody, Ende subroutineDec                // }
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
+    
+
+
+    
+
+
+
+
     throw new Error('TODO: compileSubroutine implementieren.');
   }
 
@@ -135,7 +190,7 @@ export default class CompilationEngine {
 
   /** Kompiliert eine lokale `var`-Deklaration. */
   compileVarDec(): void {
-    // TODO: Folge der Grammatik für `varDec`.
+    // TODO: Folge der Grammatik für `varDec`.                  // muss advance!!
     throw new Error('TODO: compileVarDec implementieren.');
   }
 
