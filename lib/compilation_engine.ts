@@ -231,17 +231,17 @@ export default class CompilationEngine {
   /** Kompiliert eine lokale `var`-Deklaration. */
   compileVarDec(): void {
     // TODO: Folge der Grammatik für `varDec`.        // muss advance!!
-    
+
     // 'var'
-    this.write("<keyWord> var </keyword>\n")  
-    
+    this.write("<keyWord> var </keyword>\n")
+
     // type
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
     if (!this.isType()) {
       throw new Error('VarDec: kein type.')
     }
     this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
-    
+
     // varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
@@ -261,11 +261,11 @@ export default class CompilationEngine {
     // ;
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.current_token == ';') {
-      this.write("<symbol> ; </symbol>\n") 
+      this.write("<symbol> ; </symbol>\n")
     }
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
   }
-  
+
 
   /** Kompiliert eine Folge von Statements ohne die umschliessenden geschweiften Klammern. */
   compileStatements(): void {
@@ -394,7 +394,13 @@ export default class CompilationEngine {
   /** Kompiliert einen Ausdruck. */
   compileExpression(): void {
     // TODO: Kompiliere `term (op term)*`.
-    throw new Error('TODO: compileExpression implementieren.');
+    this.compileTerm();
+
+    while (this.tokenizer.tokenType === 'SYMBOL' && ['+', '-', '*', '/', '&', '|', '<', '>', '='].includes(this.tokenizer.symbol)) {
+      this.write("<symbol> " + this.tokenizer.symbol + " </symbol>\n");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      this.compileTerm();
+    }
   }
 
   /**
@@ -407,12 +413,20 @@ export default class CompilationEngine {
   compileTerm(): void {
     // TODO: Unterscheide alle Formen der Grammatikregel `term`.
     // Bei einem Identifier helfen `[`, `(` und `.` als ein Token Lookahead.
-    throw new Error('TODO: compileTerm implementieren.');
+    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("term: einzelner Identifier erwartet");
+    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
   }
 
   /** Kompiliert eine möglicherweise leere, durch Kommas getrennte Ausdrucksliste. */
   compileExpressionList(): void {
-    // TODO: Implementiere die möglicherweise leere, komma-getrennte Liste.
-    throw new Error('TODO: compileExpressionList implementieren.');
+    if (this.tokenizer.tokenType != 'SYMBOL') {
+      this.compileExpression();
+      while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '(') {
+        this.write("<symbol> , </symbol>\n");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        this.compileExpression();
+      }
+    }
   }
 }
