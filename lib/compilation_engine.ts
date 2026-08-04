@@ -144,7 +144,7 @@ export default class CompilationEngine {
 
     // (
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
-    if (this.tokenizer.current_token != '('){
+    if (this.tokenizer.current_token != '(') {
       throw new Error('SubroutineDec: erwartet "(".')
     }
     this.write("<symbol> ( </symbol>\n")
@@ -169,7 +169,7 @@ export default class CompilationEngine {
 
     // call varDec
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
-    while (this.tokenizer.current_token == 'var') { 
+    while (this.tokenizer.current_token == 'var') {
       this.compileVarDec()
       //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
     }
@@ -179,7 +179,7 @@ export default class CompilationEngine {
 
     // }
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance 
-    if (this.tokenizer.current_token != '}'){                     // 
+    if (this.tokenizer.current_token != '}') {                     // 
       throw new Error('SubroutineDec: erwartet "}".')
     }
     this.write("<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>\n")        // Ende subroutineBody, Ende subroutineDec                // }
@@ -192,40 +192,40 @@ export default class CompilationEngine {
   compileParameterList(): void {
     // TODO: Implementiere die möglicherweise leere, komma-getrennte Liste.
     // zeigt am Anfang hinter die erste Klammer, danach auf letzte Klammer
-    this.write("<parameterList>")
+    this.write("<parameterList>\n")
     if (this.tokenizer.tokenType === "KEYWORD") {
       // mindestens ein Parameter
 
       // Datentyp
       if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
-      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
+      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
       // Parameterbezeichnung
       if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
-      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>");
+      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
       // weitere Parameter
       while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol == ',') { // Komma
-        this.write("<symbol> , </symbol>");
+        this.write("<symbol> , </symbol>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         else break; // sonst Gefahr einer Endlosschleife
 
         // Datentyp
         if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
-        this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
+        this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
         // Parameterbezeichnung
         if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
-        this.write("<identifier> " + this.tokenizer.identifier + "</identifier>");
+        this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       }
 
     }
     //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    this.write("</parameterList>")
+    this.write("</parameterList>\n")
   }
 
   /** Kompiliert eine lokale `var`-Deklaration. */
