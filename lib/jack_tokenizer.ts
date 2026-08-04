@@ -177,8 +177,7 @@ export default class JackTokenizer {
    * wenn tokenType = 'INT_CONST'.
    */
   get intVal(): number {
-    // TODO: Gib den aktuellen Integer-Wert zurück.
-    throw new Error('TODO: intVal implementieren.');
+    return parseInt(this.current_token!);
   }
 
   /**
@@ -186,8 +185,7 @@ export default class JackTokenizer {
    * wenn tokenType = 'STRING_CONST'.
    */
   get stringVal(): string {
-    // TODO: Gib den aktuellen String zurück.
-    throw new Error('TODO: stringVal implementieren.');
+    return this.current_token!.slice(1, this.current_token!.length - 1);
   }
 }
 
