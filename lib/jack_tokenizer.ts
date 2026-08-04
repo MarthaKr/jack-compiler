@@ -73,6 +73,9 @@ export default class JackTokenizer {
       this.cursor = this.cursor + this.current_token.length;
     }
     else this.cursor = 0;
+    while (this.content[this.cursor] === " ") {
+      this.cursor++;
+    }
     let currentC = this.content[this.cursor];
     if (currentC === "\"") {
       // string constant
@@ -148,7 +151,7 @@ export default class JackTokenizer {
    */
   get keyWord(): KeyWord {
     // TODO: Gib das aktuelle Keyword zurück.
-    let newWord: KeyWord  
+    let newWord: KeyWord
     newWord = this.current_token!.toUpperCase() as KeyWord
     return newWord
   }
@@ -160,7 +163,7 @@ export default class JackTokenizer {
   get symbol(): string {
     // TODO: Gib das aktuelle Symbol zurück.
     return this.current_token!
-   
+
   }
 
   /**
