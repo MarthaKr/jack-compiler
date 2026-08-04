@@ -127,59 +127,65 @@ export default class CompilationEngine {
 
     this.write("<subroutineDec>\n");
     this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+
+    // type / void
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     if ((!this.isType()) && (this.tokenizer.current_token != 'void')) {
       throw new Error('SubroutineDec: kein type.')
     }
     this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+
+    // subroutine Name
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
     if (this.tokenizer.tokenType != 'IDENTIFIER') {
       throw new Error("SubroutineDec: kein subroutineName")
     }
-    this.write("<string constant>" + this.tokenizer.current_token + "</string constant>\n")
+    this.write("<stringConstant>" + this.tokenizer.current_token + "</stringConstant>\n")
+
+    // (
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
     if (this.tokenizer.current_token != '('){
       throw new Error('SubroutineDec: erwartet "(".')
     }
     this.write("<symbol> ( </symbol>\n")
 
+    // call ParameterList
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     this.compileParameterList()
+
+    // )
     if (this.tokenizer.current_token != ')'){
       throw new Error('SubroutineDec: erwartet ")".')
     }
     this.write("<symbol> ) </symbol>\n")
-    
+
+    // subroutineBody
+    // {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
-    
-
-
-
     if (this.tokenizer.current_token != '{'){                     // Subroutine Body
       throw new Error('SubroutineDec: erwartet "{".')
     }
     this.write("<subroutineBody>\n<symbol> { </symbol>\n")
+
+    // call varDec
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     while (this.tokenizer.current_token == 'var') { 
       this.compileVarDec()
       //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
     }
+
+    // statements
     this.compileStatements()                                      // statements
+
+    // }
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance 
     if (this.tokenizer.current_token != '}'){                     // 
       throw new Error('SubroutineDec: erwartet "}".')
     }
     this.write("<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>\n")        // Ende subroutineBody, Ende subroutineDec                // }
+    
+    
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
-    
-
-
-    
-
-
-
-
-    throw new Error('TODO: compileSubroutine implementieren.');
   }
 
   /** Kompiliert eine möglicherweise leere Parameterliste. */
