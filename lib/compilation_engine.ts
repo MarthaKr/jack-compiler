@@ -346,7 +346,7 @@ export default class CompilationEngine {
 
     // varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
-    if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+    if (this.tokenizer.tokenType != 'IDENTIFIER') {
       throw new Error('letStatement: erwartet "varName".')
     }
     this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
@@ -362,10 +362,10 @@ export default class CompilationEngine {
       if (this.tokenizer.current_token === ']') {
         this.write("<symbol> ] </symbol>\n")
       }
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     }
 
     // =
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.current_token === '=') {
       this.write("<symbol> = </symbol>\n")
     }
@@ -378,7 +378,8 @@ export default class CompilationEngine {
     this.compileExpression()
 
     // ;
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    console.log(this.tokenizer.current_token);
     if (this.tokenizer.current_token != ';') {
       throw new Error('letStatement: erwartet ";".')
     }
