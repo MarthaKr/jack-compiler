@@ -255,15 +255,43 @@ export default class CompilationEngine {
           this.compileIf();
         }
       }
-      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-      else break; // ansonsten: Gefahr der Endlosschleife
     }
   }
 
   /** Kompiliert ein `do`-Statement. */
   compileDo(): void {
-    // TODO: Folge der Grammatik für `doStatement`.
-    throw new Error('TODO: compileDo implementieren.');
+    this.write("<doStatement>\n")
+    this.write("<keyword> do </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+    // subroutineCall
+    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("doStatement: Indentifier erwartet")
+    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+    if (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
+      this.write("<symbol> . </symbol>\n");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("doStatement: nach Punkt wird Identifier erwartet")
+      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
+
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    }
+
+    // (
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '(') throw new Error("doStatement: öffnende Klammer erwartet")
+    this.write("<symbol> ( </symbol>\n");
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+    // expressionList
+    this.compileExpression();
+
+    // )
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error("doStatement: schließende Klammer erwartet")
+    this.write("<symbol> ) </symbol>\n");
+
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    this.write("</doStatement>")
   }
 
   /** Kompiliert ein `let`-Statement. */
