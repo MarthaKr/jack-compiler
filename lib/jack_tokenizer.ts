@@ -45,7 +45,8 @@ export default class JackTokenizer {
    */
   hasMoreTokens(): Boolean {
     // TODO: Überspringe Leerzeichen und prüfe, ob danach noch Inhalt folgt.
-    let jetzt = this.cursor;
+    if (this.current_token === undefined) return true;
+    let jetzt = this.cursor + this.current_token.length;
     let laenge: number
     laenge = this.content.length;
     if (jetzt >= laenge) return false;
