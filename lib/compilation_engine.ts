@@ -130,7 +130,41 @@ export default class CompilationEngine {
   /** Kompiliert eine möglicherweise leere Parameterliste. */
   compileParameterList(): void {
     // TODO: Implementiere die möglicherweise leere, komma-getrennte Liste.
-    throw new Error('TODO: compileParameterList implementieren.');
+    // zeigt am Anfang hinter die erste Klammer, danach auf letzte Klammer
+    this.write("<parameterList>")
+    if (this.tokenizer.tokenType === "KEYWORD") {
+      // mindestens ein Parameter
+
+      // Datentyp
+      if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
+      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+      // Parameterbezeichnung
+      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
+      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+      // weitere Parameter
+      while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol == ',') { // Komma
+        this.write("<symbol> , </symbol>");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        else break; // sonst Gefahr einer Endlosschleife
+
+        // Datentyp
+        if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
+        this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+        // Parameterbezeichnung
+        if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
+        this.write("<identifier> " + this.tokenizer.identifier + "</identifier>");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      }
+
+    }
+    //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    this.write("</parameterList>")
   }
 
   /** Kompiliert eine lokale `var`-Deklaration. */
