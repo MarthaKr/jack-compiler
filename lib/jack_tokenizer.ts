@@ -45,6 +45,20 @@ export default class JackTokenizer {
    */
   hasMoreTokens(): Boolean {
     // TODO: Überspringe Leerzeichen und prüfe, ob danach noch Inhalt folgt.
+    let jetzt = this.cursor;
+    let laenge : number
+    laenge = this.content.length;
+    while (this.content[jetzt] === ' ') {
+      if ((jetzt + 1) < laenge){
+        jetzt += 1;
+      }
+      else if ((jetzt + 1) >=  laenge) {
+        return false
+      }
+    }
+    if (this.content[jetzt] != ' ') {
+      return true
+    }
     return false;
   }
 
@@ -111,6 +125,21 @@ export default class JackTokenizer {
    */
   get tokenType(): TokenType {
     // TODO: Gib den Typ des aktuellen Tokens zurück.
+    if (this.current_token![0] === '"'){
+      return 'STRING_CONST'}
+    else if (['0', '1','2', '3', '4', '5', '6', '7', '8', '9'].includes(this.current_token![0])){
+      return 'INT_CONST'}
+    else if (['{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~'].includes(this.current_token![0])){
+      return 'SYMBOL'
+    }
+    else if (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'].includes(this.current_token![0])) {
+      return 'IDENTIFIER'
+    }
+    else if (['class', 'method', 'function', 'constructor', 'int', 'boolean'
+  , 'char', 'void', 'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this'].includes(this.current_token![0])) {
+      return 'KEYWORD'
+    }
     throw new Error('TODO: tokenType implementieren.');
   }
 
