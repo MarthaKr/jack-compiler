@@ -189,7 +189,7 @@ export default class JackTokenizer {
    * wenn tokenType = 'STRING_CONST'.
    */
   get stringVal(): string {
-    return this.current_token!.slice(1, this.current_token!.length - 1);
+    return this.current_token!;
   }
 }
 
