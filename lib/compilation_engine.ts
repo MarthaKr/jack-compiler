@@ -258,7 +258,6 @@ export default class CompilationEngine {
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       else break; // ansonsten: Gefahr der Endlosschleife
     }
-    throw new Error('TODO: compileStatements implementieren.');
   }
 
   /** Kompiliert ein `do`-Statement. */
