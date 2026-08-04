@@ -354,7 +354,13 @@ export default class CompilationEngine {
   /** Kompiliert einen Ausdruck. */
   compileExpression(): void {
     // TODO: Kompiliere `term (op term)*`.
-    throw new Error('TODO: compileExpression implementieren.');
+    this.compileTerm();
+
+    while (this.tokenizer.tokenType === 'SYMBOL' && ['+', '-', '*', '/', '&', '|', '<', '>', '='].includes(this.tokenizer.symbol)) {
+      this.write("<symbol> " + this.tokenizer.symbol + " </symbol>\n");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      this.compileTerm();
+    }
   }
 
   /**
