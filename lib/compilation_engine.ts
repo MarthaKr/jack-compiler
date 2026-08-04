@@ -373,7 +373,9 @@ export default class CompilationEngine {
   compileTerm(): void {
     // TODO: Unterscheide alle Formen der Grammatikregel `term`.
     // Bei einem Identifier helfen `[`, `(` und `.` als ein Token Lookahead.
-    throw new Error('TODO: compileTerm implementieren.');
+    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("term: einzelner Identifier erwartet");
+    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
   }
 
   /** Kompiliert eine möglicherweise leere, durch Kommas getrennte Ausdrucksliste. */
