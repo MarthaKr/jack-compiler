@@ -265,16 +265,7 @@ export default class CompilationEngine {
     }
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
   }
-
-
-
-
-    
-    
-    throw new Error('TODO: compileVarDec implementieren.');// muss advance!!
-    
-    
-  }
+  
 
   /** Kompiliert eine Folge von Statements ohne die umschliessenden geschweiften Klammern. */
   compileStatements(): void {
