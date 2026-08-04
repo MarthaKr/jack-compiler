@@ -170,7 +170,9 @@ export default class CompilationEngine {
 
     // call varDec
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
-    while (this.tokenizer.current_token == 'var') {
+    //console.log(this.tokenizer.current_token);
+    while (this.tokenizer.current_token === 'var') {
+      //console.log("compileVarDec");
       this.compileVarDec()
       //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
     }
@@ -233,8 +235,9 @@ export default class CompilationEngine {
   compileVarDec(): void {
     // TODO: Folge der Grammatik für `varDec`.        // muss advance!!
 
+    this.write("<varDec>\n");
     // 'var'
-    this.write("<keyWord> var </keyword>\n")
+    this.write("<keyword> var </keyword>\n")
 
     // type
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
@@ -245,26 +248,31 @@ export default class CompilationEngine {
 
     // varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
-    if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+    if (this.tokenizer.tokenType === 'IDENTIFIER') {
       this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
     }
+    else throw new Error("varDec: identifier erwartet")
 
     // mehr varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     while (this.tokenizer.current_token == ',') {
       this.write("<symbol> , </symbol>\n")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
-      if (this.tokenizer.tokenType != 'STRING_CONSTANT') {
+      if (this.tokenizer.tokenType === 'IDENTIFIER') {
         this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
       }
+      else throw new Error("varDec: identifier erwartet")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     }
 
     // ;
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    //console.log(this.tokenizer.current_token);
     if (this.tokenizer.current_token == ';') {
       this.write("<symbol> ; </symbol>\n")
     }
+    else throw new Error("varDec: Semikolon fehlt");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    this.write("</varDec>\n")
   }
 
 
