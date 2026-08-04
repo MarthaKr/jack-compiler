@@ -1,3 +1,0 @@
-print('Hallo')
-hihi huhu hahaha
-lala
