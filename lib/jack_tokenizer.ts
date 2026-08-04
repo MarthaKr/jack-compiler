@@ -7,7 +7,7 @@ import * as fs from 'fs';
  */
 export default class JackTokenizer {
   content: string;
-  cursor: number = 0; // aktuelle Position im content String
+  cursor: number = 0; // aktuelle Position im content String --> zeigt immer auf Anfang des aktuellen Tokens
   current_token?: string;
   token_type?: TokenType;
   keyword?: KeyWord;
@@ -55,7 +55,53 @@ export default class JackTokenizer {
   advance() {
     // TODO: Lies ab `cursor` genau ein Token.
     // Setze `current_token`, `token_type` und `cursor` auf den neuen Stand.
-    throw new Error('TODO: advance implementieren.');
+    if (this.current_token != undefined) {
+      this.cursor = this.cursor + this.current_token.length;
+    }
+    else this.cursor = 0;
+    let currentC = this.content[this.cursor];
+    if (currentC === "\"") {
+      // string constant
+      this.token_type = 'STRING_CONST'
+      let end = this.cursor + 1;
+      while (end < this.content.length && this.content[end] != "\"") {
+        end++;
+      }
+      if (end >= this.content.length) throw new Error("Missing closing quotation mark");
+      this.current_token = this.content.slice(this.cursor, end + 1);
+    }
+    else if (element_symbol.includes(currentC)) {
+      // symbol
+      this.token_type = 'SYMBOL'
+      this.current_token = this.content[this.cursor];
+    }
+    else if (element_number.includes(currentC)) {
+      // int constant (identifier dürfen nicht mit Zahl anfangen)
+      this.token_type = 'INT_CONST'
+      let end = this.cursor;
+      while (end < this.content.length && element_number.includes(this.content[end])) {
+        end++;
+      }
+      this.current_token = this.content.slice(this.cursor, end);
+    }
+    else {
+      // identifier oder keyword
+      let isKeyword = false;
+      for (let kw of element_keyword) {
+        if (this.content.slice(this.cursor, this.cursor + kw.length) === kw) {
+          isKeyword = true;
+          this.current_token = kw;
+          this.token_type = 'KEYWORD';
+        }
+      }
+      if (!isKeyword) {
+        // identifier
+        this.token_type = 'IDENTIFIER'
+        let end = this.cursor;
+        while (end < this.content.length && element_identifier.includes(this.content[end])) end++;
+        this.current_token = this.content.slice(this.cursor, end);
+      }
+    }
   }
 
   /**
