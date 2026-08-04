@@ -331,7 +331,7 @@ export default class CompilationEngine {
   /** Kompiliert ein `let`-Statement. */
   compileLet(): void {
     // TODO: Folge der Grammatik für `letStatement`.
-    this.write("<letStatement>\n<keyword> var </keyword>\n")
+    this.write("<letStatement>\n<keyword> let </keyword>\n")
 
     // varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
@@ -339,7 +339,7 @@ export default class CompilationEngine {
       throw new Error('letStatement: erwartet "varName".')
     }
     this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
-    
+
 
     // expression ?
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
@@ -352,13 +352,13 @@ export default class CompilationEngine {
         this.write("<symbol> ] </symbol>\n")
       }
     }
-    
+
     // =
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.current_token === '=') {
       this.write("<symbol> = </symbol>\n")
     }
-    else{
+    else {
       throw new Error('letStatement: erwartet "=".')
     }
 
