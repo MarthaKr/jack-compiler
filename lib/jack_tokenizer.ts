@@ -148,7 +148,9 @@ export default class JackTokenizer {
    */
   get keyWord(): KeyWord {
     // TODO: Gib das aktuelle Keyword zurück.
-    throw new Error('TODO: keyWord implementieren.');
+    let newWord: KeyWord  
+    newWord = this.current_token!.toUpperCase() as KeyWord
+    return newWord
   }
 
   /**
