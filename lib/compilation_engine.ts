@@ -577,11 +577,43 @@ export default class CompilationEngine {
         }
         else if (['~', '-'].includes(this.tokenizer.symbol)) {
           // unaryOp term
+          if (this.tokenizer.current_token === '~') {
+            this.write('<symbol> ~ </symbol>\n')
+          }
+          else{
+            this.write('<symbol> - </symbol>\n')
+          }
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
         }
         else throw new Error("term: ungültiges Zeichen")
       }
       case ("IDENTIFIER"): {
         // subroutineCall ODER varName ODER varName[expression]
+        this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        
+        while (this.tokenizer.current_token === '.') {
+          this.write('<symbol> . </symbol>\n')
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          if (this.tokenizer.tokenType === 'IDENTIFIER'){
+            this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+            if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          }
+          else throw new Error("term: ungültiger subroutineName oder varName")
+        }
+        // wenn [ -> expression
+        if (this.tokenizer.current_token === '[') {
+          this.write("<symbol> [ </symbol>\n")
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          this.compileExpression()
+          if (this.tokenizer.current_token != '!') throw new Error("term: erwartet ]")
+          this.write("<symbol> ] </symbol>\n")
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        }
+        // wenn ( -> subroutineCall !!!muss vorn gekürzt werden!!!
+        // wenn nichts -> varName
+
       }
     }
 
