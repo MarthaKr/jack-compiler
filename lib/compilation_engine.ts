@@ -389,12 +389,50 @@ export default class CompilationEngine {
   /** Kompiliert ein `while`-Statement. */
   compileWhile(): void {
     // TODO: Folge der Grammatik für `whileStatement`.
-    throw new Error('TODO: compileWhile implementieren.');
+    this.write("<whileStatement>\n<keyword> while </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // (
+    if (this.tokenizer.current_token != '(') {
+      throw new Error('whileStatement: erwartet "(".')
+    }
+    this.write("<symbol> ( </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // call expression
+    this.compileExpression()
+
+    // )
+    if (this.tokenizer.current_token != ')') {
+      throw new Error('whileStatement: erwartet ")".')
+    }
+    this.write("<symbol> ) </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // {
+    if (this.tokenizer.current_token != '{') {
+      throw new Error('whileStatement: erwartet "{".')
+    }
+    this.write("<symbol> { </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // call statements
+    this.compileStatements()
+
+    // }
+    if (this.tokenizer.current_token != '}') {
+      throw new Error('whileStatement: erwartet "}".')
+    }
+    this.write("<symbol> } </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
   }
 
   /** Kompiliert ein `return`-Statement. */
   compileReturn(): void {
     // TODO: Berücksichtige die optionale Expression vor dem Semikolon.
+    
+
+
     throw new Error('TODO: compileReturn implementieren.');
   }
 
