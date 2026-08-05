@@ -495,15 +495,27 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
 
     // else?
-    if (true) { }
+    if (this.tokenizer.current_token === 'else') { 
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    
+      // {
+      if (this.tokenizer.current_token != '{') {
+        throw new Error('ifStatement elseBlock: erwartet "{".')
+      }
+      this.write("<symbol> { </symbol>\n")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
 
+      // call statements
+      this.compileStatements()
 
-
-
-
-
+      // }
+      if (this.tokenizer.current_token != '}') {
+        throw new Error('ifStateme elseBlocknt: erwartet "}".')
+      }
+      this.write("<symbol> } </symbol>\n")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    }
     this.write("</ifStatement>\n");
-    throw new Error('TODO: compileIf implementieren.');
   }
 
   /** Kompiliert einen Ausdruck. */
