@@ -423,22 +423,82 @@ export default class CompilationEngine {
     if (this.tokenizer.current_token != '}') {
       throw new Error('whileStatement: erwartet "}".')
     }
-    this.write("<symbol> } </symbol>\n")
+    this.write("<symbol> } </symbol>\n</whileStatement>\n")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
   }
 
   /** Kompiliert ein `return`-Statement. */
   compileReturn(): void {
     // TODO: Berücksichtige die optionale Expression vor dem Semikolon.
-    
+    if (this.tokenizer.current_token != 'return') {
+      throw new Error('ReturnStatement: erwartet "return".')
+    }
+    this.write("<ReturnStatement>\n<keyword> return </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
+    // expression
+    if (this.tokenizer.tokenType === 'IDENTIFIER') {
+      this.compileExpression()
+    }
 
-    throw new Error('TODO: compileReturn implementieren.');
+    // ;
+    if (this.tokenizer.current_token != ';') {
+      throw new Error('ReturnStatement: erwartet ";".')
+    }
+    this.write("<symbol> ; </symbol>\n</ReturnStatement>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
   }
 
   /** Kompiliert ein `if`-Statement, gegebenenfalls mit `else`-Zweig. */
   compileIf(): void {
     // TODO: Folge der Grammatik für `ifStatement`, inklusive optionalem `else`.
+    this.write("<ifStatement>\n<keyword> if </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // (
+    if (this.tokenizer.current_token != '(') {
+      throw new Error('ifStatement: erwartet "(".')
+    }
+    this.write("<symbol> ( </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // call expression
+    this.compileExpression()
+
+    // )
+    if (this.tokenizer.current_token != ')') {
+      throw new Error('ifStatement: erwartet ")".')
+    }
+    this.write("<symbol> ) </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // {
+    if (this.tokenizer.current_token != '{') {
+      throw new Error('ifStatement: erwartet "{".')
+    }
+    this.write("<symbol> { </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // call statements
+    this.compileStatements()
+
+    // }
+    if (this.tokenizer.current_token != '}') {
+      throw new Error('ifStatement: erwartet "}".')
+    }
+    this.write("<symbol> } </symbol>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+
+    // else?
+    if 
+  }
+
+
+
+
+
+
+<ifStatement>\n
     throw new Error('TODO: compileIf implementieren.');
   }
 
