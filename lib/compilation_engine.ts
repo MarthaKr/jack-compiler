@@ -490,15 +490,14 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
 
     // else?
-    if 
-  }
+    if (true) { }
 
 
 
 
 
 
-<ifStatement>\n
+    this.write("</ifStatement>\n");
     throw new Error('TODO: compileIf implementieren.');
   }
 
