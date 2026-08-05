@@ -534,25 +534,42 @@ export default class CompilationEngine {
 
     switch (this.tokenizer.tokenType) {
       case ("INT_CONST"): {
-        this.write("<integerConstant> " + this.tokenizer.current_token + "</integerConstant>");
+        // integerConstant
+        this.write("<integerConstant> " + this.tokenizer.current_token + " </integerConstant>");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       }
       case ("STRING_CONST"): {
-        this.write("<stringConstant> " + this.tokenizer.current_token + "</stringConstant>");
+        // stringConstant
+        this.write("<stringConstant> " + this.tokenizer.current_token + " </stringConstant>");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       }
       case ("KEYWORD"): {
-        if (["true", "false", "null"].includes(this.tokenizer.keyWord)) {
+        if (["true", "false", "null", "this"].includes(this.tokenizer.keyWord)) {
           // keyword constant
-          this.write("<stringConstant> " + this.tokenizer.current_token + "</stringConstant>");
+          this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
-        else if (this.tokenizer.keyWord === 'this') {
-          // subroutine Call
-        }
+        else throw new Error("term: ungültiges Keyword")
       }
       case ("SYMBOL"): {
         // (expression) ODER unaryOp term
+        if (this.tokenizer.symbol === '(') {
+          this.write("<symbol> ( </symbol>\n");
+          // (expression)
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          else throw new Error("term nicht beendet");
+          this.compileExpression();
+          if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error('term: erwartet ")"')
+          this.write("<symbol> ) </symbol>\n");
+          this.tokenizer.advance();
+        }
+        else if (['~', '-'].includes(this.tokenizer.symbol)) {
+          // unaryOp term
+        }
+        else throw new Error("term: ungültiges Zeichen")
+      }
+      case ("IDENTIFIER"): {
+        // subroutineCall ODER varName ODER varName[expression]
       }
     }
 
