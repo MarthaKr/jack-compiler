@@ -300,28 +300,23 @@ export default class CompilationEngine {
     }
   }
 
-  /** Kompiliert ein `do`-Statement. */
-  compileDo(): void {
-    this.write("<doStatement>\n")
-    this.write("<keyword> do </keyword>\n")
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-
+  compileSubroutineCall(): void {
     // subroutineCall
-    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("doStatement: Indentifier erwartet")
+    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: Indentifier erwartet")
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     if (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
       this.write("<symbol> . </symbol>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("doStatement: nach Punkt wird Identifier erwartet")
+      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: nach Punkt wird Identifier erwartet")
       this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
 
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
     }
 
     // (
-    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '(') throw new Error("doStatement: öffnende Klammer erwartet")
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '(') throw new Error("subroutineCall: öffnende Klammer erwartet")
     this.write("<symbol> ( </symbol>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
@@ -329,10 +324,20 @@ export default class CompilationEngine {
     this.compileExpression();
 
     // )
-    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error("doStatement: schließende Klammer erwartet")
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error("subroutineCall: schließende Klammer erwartet")
     this.write("<symbol> ) </symbol>\n");
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+  }
+
+  /** Kompiliert ein `do`-Statement. */
+  compileDo(): void {
+    this.write("<doStatement>\n")
+    this.write("<keyword> do </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+    this.compileSubroutineCall();
+
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ';') throw new Error("doStatement: Semmikolon fehlt")
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
@@ -523,9 +528,34 @@ export default class CompilationEngine {
   compileTerm(): void {
     // TODO: Unterscheide alle Formen der Grammatikregel `term`.
     // Bei einem Identifier helfen `[`, `(` und `.` als ein Token Lookahead.
-    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("term: einzelner Identifier erwartet");
+    /*if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("term: einzelner Identifier erwartet");
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();*/
+
+    switch (this.tokenizer.tokenType) {
+      case ("INT_CONST"): {
+        this.write("<integerConstant> " + this.tokenizer.current_token + "</integerConstant>");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      }
+      case ("STRING_CONST"): {
+        this.write("<stringConstant> " + this.tokenizer.current_token + "</stringConstant>");
+        if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      }
+      case ("KEYWORD"): {
+        if (["true", "false", "null"].includes(this.tokenizer.keyWord)) {
+          // keyword constant
+          this.write("<stringConstant> " + this.tokenizer.current_token + "</stringConstant>");
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        }
+        else if (this.tokenizer.keyWord === 'this') {
+          // subroutine Call
+        }
+      }
+      case ("SYMBOL"): {
+        // (expression) ODER unaryOp term
+      }
+    }
+
   }
 
   /** Kompiliert eine möglicherweise leere, durch Kommas getrennte Ausdrucksliste. */
