@@ -18,6 +18,7 @@ export default class SymbolTable {
    */
   startSubroutine(): void {
     // TODO
+    this.subroutineTable = {};
   }
 
   /**
@@ -28,7 +29,13 @@ export default class SymbolTable {
    * @param kind Art des Bezeichners
    */
   define(name: string, type: string, kind: Kind): void {
-    // TODO
+    if (type.toLowerCase() === "field" || type.toLowerCase() === "static") {
+      // Klasse
+      this.classTable[name] = [type, kind, this.varCount(kind)];
+    }
+    else {
+      this.subroutineTable[name] = [type, kind, this.varCount(kind)];
+    }
   }
 
   /**
