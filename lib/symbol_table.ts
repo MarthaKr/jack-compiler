@@ -81,7 +81,10 @@ export default class SymbolTable {
    */
   typeOf(name: string): string {
     // TODO
-    return '';
+    if (this.subroutineTable[name][0] != undefined) return this.subroutineTable[name][0]
+    if (this.classTable[name][0] != undefined) return this.classTable[name][0]
+
+    return 'NONE';
   }
 
   /**
