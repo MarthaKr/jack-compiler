@@ -49,12 +49,12 @@ export default class SymbolTable {
     let cnt: number = 0;
     if (kind.toLowerCase() === "field" || kind.toLowerCase() === "static") {
       for (let el in this.classTable) {
-        if (this.classTable[el][1] === kind) cnt++;
+        if (this.kindOf(el) === kind) cnt++;
       }
     }
     else {
       for (let el in this.subroutineTable) {
-        if (this.subroutineTable[el][1] === kind) cnt++;
+        if (this.kindOf(el) === kind) cnt++;
       }
     }
     return cnt;
@@ -68,6 +68,8 @@ export default class SymbolTable {
    */
   kindOf(name: string): Kind | 'NONE' {
     // TODO
+    if (this.classTable[name] != undefined) return this.classTable[name][1];
+    if (this.subroutineTable[name] != undefined) return this.subroutineTable[name][1];
     return 'NONE';
   }
 
