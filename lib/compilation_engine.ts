@@ -306,7 +306,7 @@ export default class CompilationEngine {
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
-    if (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
+    while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
       this.write("<symbol> . </symbol>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: nach Punkt wird Identifier erwartet")
@@ -495,9 +495,9 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
 
     // else?
-    if (this.tokenizer.current_token === 'else') { 
+    if (this.tokenizer.current_token === 'else') {
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
-    
+
       // {
       if (this.tokenizer.current_token != '{') {
         throw new Error('ifStatement elseBlock: erwartet "{".')
@@ -580,7 +580,7 @@ export default class CompilationEngine {
           if (this.tokenizer.current_token === '~') {
             this.write('<symbol> ~ </symbol>\n')
           }
-          else{
+          else {
             this.write('<symbol> - </symbol>\n')
           }
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
@@ -592,11 +592,11 @@ export default class CompilationEngine {
         // subroutineCall ODER varName ODER varName[expression]
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-        
+
         while (this.tokenizer.current_token === '.') {
           this.write('<symbol> . </symbol>\n')
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-          if (this.tokenizer.tokenType === 'IDENTIFIER'){
+          if (this.tokenizer.tokenType === 'IDENTIFIER') {
             this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
             if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           }
