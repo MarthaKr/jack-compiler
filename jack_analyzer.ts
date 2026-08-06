@@ -26,6 +26,7 @@ else {
 if (!fs.existsSync(build_dir)) fs.mkdirSync(build_dir);
 
 for (const file of files_to_parse) {
+  console.log("Datei: " + file);
   const file_parsed = path.parse(file);
   const output_file = path.join(build_dir, file_parsed.name + ".xml");
   const compilation_engine = new CompilationEngine(file, output_file);
