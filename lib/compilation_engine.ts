@@ -102,7 +102,15 @@ export default class CompilationEngine {
     }
     this.write("<keyword> " + this.tokenizer.keyWord.toLowerCase() + " </keyword>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    this.compileType();
+
+    if (this.tokenizer.tokenType === 'KEYWORD') {
+      this.compileType();
+    }
+    else {
+      this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    }
+
     if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("classVarDec: varName erwartet.");
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
@@ -126,21 +134,22 @@ export default class CompilationEngine {
     // TODO: Folge der Grammatik für `subroutineDec`.
 
     this.write("<subroutineDec>\n");
-    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n")
 
-    // type / void
+    // type / void / identifier
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     if ((!this.isType()) && (this.tokenizer.current_token != 'void')) {
       throw new Error('SubroutineDec: kein type.')
     }
-    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    if (this.tokenizer.tokenType === 'KEYWORD') this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n")
+    else this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n");
 
     // subroutine Name
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
     if (this.tokenizer.tokenType != 'IDENTIFIER') {
       throw new Error("SubroutineDec: kein subroutineName")
     }
-    this.write("<stringConstant>" + this.tokenizer.current_token + "</stringConstant>\n")
+    this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
 
     // (
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance() // advance
@@ -206,7 +215,7 @@ export default class CompilationEngine {
 
       // Parameterbezeichnung
       if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
-      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
+      this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
       // weitere Parameter
@@ -244,12 +253,17 @@ export default class CompilationEngine {
     if (!this.isType()) {
       throw new Error('VarDec: kein type.')
     }
-    this.write("<keyword>" + this.tokenizer.current_token + "</keyword>\n")
+    if (this.tokenizer.tokenType === 'KEYWORD') {
+      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n")
+    }
+    else {
+      this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+    }
 
     // varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.tokenType === 'IDENTIFIER') {
-      this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+      this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
     }
     else throw new Error("varDec: identifier erwartet")
 
@@ -259,7 +273,7 @@ export default class CompilationEngine {
       this.write("<symbol> , </symbol>\n")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
       if (this.tokenizer.tokenType === 'IDENTIFIER') {
-        this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+        this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
       }
       else throw new Error("varDec: identifier erwartet")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
@@ -279,25 +293,32 @@ export default class CompilationEngine {
   /** Kompiliert eine Folge von Statements ohne die umschliessenden geschweiften Klammern. */
   compileStatements(): void {
     // TODO: Wähle anhand des Keywords die passende compileXxx-Methode.
+    this.write("<statements>\n");
     while (this.tokenizer.tokenType === 'KEYWORD') {
       switch (this.tokenizer.keyWord) {
         case "DO": {
           this.compileDo();
+          break;
         }
         case "LET": {
           this.compileLet();
+          break;
         }
         case "WHILE": {
           this.compileWhile();
+          break;
         }
         case "RETURN": {
           this.compileReturn();
+          break;
         }
         case "IF": {
           this.compileIf();
+          break;
         }
       }
     }
+    this.write("</statements>\n");
   }
 
   compileSubroutineCallPart2(): void {
@@ -308,10 +329,13 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     // expressionList
-    this.compileExpression();
+    this.compileExpressionList();
 
     // )
-    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') throw new Error("subroutineCall: schließende Klammer erwartet")
+    if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') {
+      console.log(this.tokenizer.current_token!);
+      throw new Error("subroutineCall: schließende Klammer erwartet")
+    }
     this.write("<symbol> ) </symbol>\n");
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
@@ -325,14 +349,14 @@ export default class CompilationEngine {
 
     // subroutineCall
     if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: Indentifier erwartet")
-    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
+    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
       this.write("<symbol> . </symbol>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: nach Punkt wird Identifier erwartet")
-      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
+      this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
 
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
     }
@@ -340,9 +364,10 @@ export default class CompilationEngine {
     this.compileSubroutineCallPart2();
 
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ';') throw new Error("doStatement: Semmikolon fehlt")
+    this.write("<symbol> ; </symbol>\n")
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    this.write("</doStatement>")
+    this.write("</doStatement>\n")
   }
 
   /** Kompiliert ein `let`-Statement. */
@@ -355,7 +380,7 @@ export default class CompilationEngine {
     if (this.tokenizer.tokenType != 'IDENTIFIER') {
       throw new Error('letStatement: erwartet "varName".')
     }
-    this.write("<identifier>" + this.tokenizer.current_token + "</identifier>\n")
+    this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
 
 
     // expression ?
@@ -385,11 +410,12 @@ export default class CompilationEngine {
 
     // ;
     //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
-    console.log(this.tokenizer.current_token);
+    //console.log(this.tokenizer.current_token);
     if (this.tokenizer.current_token != ';') {
       throw new Error('letStatement: erwartet ";".')
     }
-    this.write("<symbol> ; <s/ymbol>\n</letStatement>\n")
+    this.write("<symbol> ; </symbol>\n</letStatement>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
   }
 
   /** Kompiliert ein `while`-Statement. */
@@ -437,21 +463,21 @@ export default class CompilationEngine {
   compileReturn(): void {
     // TODO: Berücksichtige die optionale Expression vor dem Semikolon.
     if (this.tokenizer.current_token != 'return') {
-      throw new Error('ReturnStatement: erwartet "return".')
+      throw new Error('returnStatement: erwartet "return".')
     }
-    this.write("<ReturnStatement>\n<keyword> return </keyword>\n")
+    this.write("<returnStatement>\n<keyword> return </keyword>\n")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     // expression
-    if (this.tokenizer.tokenType === 'IDENTIFIER') {
+    if (this.tokenizer.current_token != ';') {
       this.compileExpression()
     }
 
     // ;
     if (this.tokenizer.current_token != ';') {
-      throw new Error('ReturnStatement: erwartet ";".')
+      throw new Error('returnStatement: erwartet ";".')
     }
-    this.write("<symbol> ; </symbol>\n</ReturnStatement>\n")
+    this.write("<symbol> ; </symbol>\n</returnStatement>\n")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
   }
 
@@ -497,6 +523,7 @@ export default class CompilationEngine {
 
     // else?
     if (this.tokenizer.current_token === 'else') {
+      this.write("<keyword> else </keyword>\n")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
 
       // {
@@ -522,6 +549,7 @@ export default class CompilationEngine {
   /** Kompiliert einen Ausdruck. */
   compileExpression(): void {
     // TODO: Kompiliere `term (op term)*`.
+    this.write("<expression>\n");
     this.compileTerm();
 
     while (this.tokenizer.tokenType === 'SYMBOL' && ['+', '-', '*', '/', '&', '|', '<', '>', '='].includes(this.tokenizer.symbol)) {
@@ -529,6 +557,7 @@ export default class CompilationEngine {
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
       this.compileTerm();
     }
+    this.write("</expression>\n");
   }
 
   /**
@@ -545,24 +574,30 @@ export default class CompilationEngine {
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();*/
 
+    this.write("<term>\n");
+
     switch (this.tokenizer.tokenType) {
       case ("INT_CONST"): {
         // integerConstant
-        this.write("<integerConstant> " + this.tokenizer.current_token + " </integerConstant>");
+        this.write("<integerConstant> " + this.tokenizer.current_token + " </integerConstant> \n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        break;
       }
       case ("STRING_CONST"): {
         // stringConstant
-        this.write("<stringConstant> " + this.tokenizer.current_token + " </stringConstant>");
+        this.write("<stringConstant> " + this.tokenizer.current_token + " </stringConstant> \n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+        break;
       }
       case ("KEYWORD"): {
-        if (["true", "false", "null", "this"].includes(this.tokenizer.keyWord)) {
+        //console.log(this.tokenizer.keyWord);
+        if (["true", "false", "null", "this"].includes(this.tokenizer.current_token)) {
           // keyword constant
-          this.write("<keyword> " + this.tokenizer.current_token + " </keyword>");
+          this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
         else throw new Error("term: ungültiges Keyword")
+        break;
       }
       case ("SYMBOL"): {
         // (expression) ODER unaryOp term
@@ -585,9 +620,10 @@ export default class CompilationEngine {
             this.write('<symbol> - </symbol>\n')
           }
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-
+          this.compileTerm();
         }
         else throw new Error("term: ungültiges Zeichen")
+        break;
       }
       case ("IDENTIFIER"): {
         // subroutineCall ODER varName ODER varName[expression]
@@ -608,7 +644,7 @@ export default class CompilationEngine {
           this.write("<symbol> [ </symbol>\n")
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           this.compileExpression()
-          if (this.tokenizer.current_token != '!') throw new Error("term: erwartet ]")
+          if (this.tokenizer.current_token != ']') throw new Error("term: erwartet ]")
           this.write("<symbol> ] </symbol>\n")
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
@@ -617,20 +653,23 @@ export default class CompilationEngine {
           this.compileSubroutineCallPart2();
         }
         // wenn nichts -> varName (nichts mehr zu tun)
+        break;
       }
     }
-
+    this.write("</term>\n");
   }
 
   /** Kompiliert eine möglicherweise leere, durch Kommas getrennte Ausdrucksliste. */
   compileExpressionList(): void {
-    if (this.tokenizer.tokenType != 'SYMBOL') {
+    this.write("<expressionList>\n");
+    if (this.tokenizer.current_token != ")") {
       this.compileExpression();
-      while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '(') {
+      while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === ',') {
         this.write("<symbol> , </symbol>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         this.compileExpression();
       }
     }
+    this.write("</expressionList>\n")
   }
 }
