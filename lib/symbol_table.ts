@@ -68,8 +68,8 @@ export default class SymbolTable {
    */
   kindOf(name: string): Kind | 'NONE' {
     // TODO
-    if (this.classTable[name] != undefined) return this.classTable[name][1];
     if (this.subroutineTable[name] != undefined) return this.subroutineTable[name][1];
+    if (this.classTable[name] != undefined) return this.classTable[name][1];
     return 'NONE';
   }
 
@@ -92,6 +92,7 @@ export default class SymbolTable {
    */
   indexOf(name: string): number {
     // TODO
-    return -1;
+    if (this.subroutineTable[name] != undefined) return this.subroutineTable[name][2];
+    return this.classTable[name][2];
   }
 }
