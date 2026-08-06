@@ -300,20 +300,7 @@ export default class CompilationEngine {
     }
   }
 
-  compileSubroutineCall(): void {
-    // subroutineCall
-    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: Indentifier erwartet")
-    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-
-    while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
-      this.write("<symbol> . </symbol>\n");
-      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: nach Punkt wird Identifier erwartet")
-      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
-
-      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    }
+  compileSubroutineCallPart2(): void {
 
     // (
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '(') throw new Error("subroutineCall: öffnende Klammer erwartet")
@@ -336,7 +323,21 @@ export default class CompilationEngine {
     this.write("<keyword> do </keyword>\n")
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
-    this.compileSubroutineCall();
+    // subroutineCall
+    if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: Indentifier erwartet")
+    this.write("<identifier> " + this.tokenizer.identifier + " </identifier>")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+    while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === '.') {
+      this.write("<symbol> . </symbol>\n");
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+      if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("subroutineCall: nach Punkt wird Identifier erwartet")
+      this.write("<identifier> " + this.tokenizer.identifier + "</identifier>\n");
+
+      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    }
+
+    this.compileSubroutineCallPart2();
 
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ';') throw new Error("doStatement: Semmikolon fehlt")
 
@@ -612,8 +613,10 @@ export default class CompilationEngine {
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
         // wenn ( -> subroutineCall !!!muss vorn gekürzt werden!!!
-        // wenn nichts -> varName
-
+        else if (this.tokenizer.current_token === '(') {
+          this.compileSubroutineCallPart2();
+        }
+        // wenn nichts -> varName (nichts mehr zu tun)
       }
     }
 
