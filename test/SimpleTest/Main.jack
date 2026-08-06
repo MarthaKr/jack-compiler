@@ -1,0 +1,6 @@
+class Main {
+    function void main() {
+        var int test;
+        let test = (3 * 4) + (8 - 5);
+    }
+}
