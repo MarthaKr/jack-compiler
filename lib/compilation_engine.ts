@@ -103,13 +103,7 @@ export default class CompilationEngine {
     this.write("<keyword> " + this.tokenizer.keyWord.toLowerCase() + " </keyword>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
-    if (this.tokenizer.tokenType === 'KEYWORD') {
-      this.compileType();
-    }
-    else {
-      this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
-      if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    }
+    this.compileType();
 
     if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("classVarDec: varName erwartet.");
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
@@ -247,25 +241,20 @@ export default class CompilationEngine {
     this.write("<varDec>\n");
     // 'var'
     this.write("<keyword> var </keyword>\n")
+    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     // type
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
-    if (!this.isType()) {
-      throw new Error('VarDec: kein type.')
-    }
-    if (this.tokenizer.tokenType === 'KEYWORD') {
-      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n")
-    }
-    else {
-      this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
-    }
+    this.compileType();
 
     // varName
-    if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
+    //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.tokenType === 'IDENTIFIER') {
       this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
     }
-    else throw new Error("varDec: identifier erwartet")
+    else {
+      console.log(this.tokenizer.current_token)
+      throw new Error("varDec: identifier erwartet")
+    }
 
     // mehr varName
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
@@ -275,7 +264,7 @@ export default class CompilationEngine {
       if (this.tokenizer.tokenType === 'IDENTIFIER') {
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
       }
-      else throw new Error("varDec: identifier erwartet")
+      else throw new Error("varDec: identifier nach Komma erwartet")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     }
 
