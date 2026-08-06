@@ -25,11 +25,11 @@ export default class SymbolTable {
    * Fügt einen neuen Bezeichner mit Typ und Art zur passenden Symboltabelle hinzu.
    *
    * @param name Name des Bezeichners
-   * @param type Jack-Typ des Bezeichners
-   * @param kind Art des Bezeichners
+   * @param type Jack-Typ des Bezeichners (int, string, ...)
+   * @param kind Art des Bezeichners (field, static, var oder argument)
    */
   define(name: string, type: string, kind: Kind): void {
-    if (type.toLowerCase() === "field" || type.toLowerCase() === "static") {
+    if (kind.toLowerCase() === "field" || kind.toLowerCase() === "static") {
       // Klasse
       this.classTable[name] = [type, kind, this.varCount(kind)];
     }
@@ -46,7 +46,18 @@ export default class SymbolTable {
    */
   varCount(kind: Kind): number {
     // TODO
-    return 0;
+    let cnt: number = 0;
+    if (kind.toLowerCase() === "field" || kind.toLowerCase() === "static") {
+      for (let el in this.classTable) {
+        if (this.classTable[el][1] === kind) cnt++;
+      }
+    }
+    else {
+      for (let el in this.subroutineTable) {
+        if (this.subroutineTable[el][1] === kind) cnt++;
+      }
+    }
+    return cnt;
   }
 
   /**
