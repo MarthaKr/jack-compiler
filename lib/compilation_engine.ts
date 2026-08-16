@@ -1,5 +1,6 @@
 import JackTokenizer from './jack_tokenizer.ts';
 import { appendFileSync, writeFileSync } from 'node:fs';
+import VMWriter from './vm_writer.ts';
 
 /**
  * Parst ein Jack-Programm und schreibt seine Struktur als XML in eine Datei.
@@ -13,6 +14,7 @@ import { appendFileSync, writeFileSync } from 'node:fs';
 export default class CompilationEngine {
   tokenizer: JackTokenizer;
   output_file: string;
+  vm_writer: VMWriter;
 
   /**
    * Erstellt eine Compilation Engine.
@@ -24,6 +26,7 @@ export default class CompilationEngine {
   constructor(input_file: string, output_file: string) {
     this.tokenizer = new JackTokenizer(input_file);
     this.output_file = output_file;
+    this.vm_writer = new VMWriter(output_file);
 
     writeFileSync(this.output_file, ''); // Erstelle (und leere) die Datei
     if (this.tokenizer.hasMoreTokens()) {
@@ -361,7 +364,6 @@ export default class CompilationEngine {
 
   /** Kompiliert ein `let`-Statement. */
   compileLet(): void {
-    // TODO: Folge der Grammatik für `letStatement`.
     this.write("<letStatement>\n<keyword> let </keyword>\n")
 
     // varName
@@ -557,7 +559,6 @@ export default class CompilationEngine {
    * beiden letztgenannten Formen ein.
    */
   compileTerm(): void {
-    // TODO: Unterscheide alle Formen der Grammatikregel `term`.
     // Bei einem Identifier helfen `[`, `(` und `.` als ein Token Lookahead.
     /*if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("term: einzelner Identifier erwartet");
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
@@ -569,11 +570,13 @@ export default class CompilationEngine {
       case ("INT_CONST"): {
         // integerConstant
         this.write("<integerConstant> " + this.tokenizer.current_token + " </integerConstant> \n");
+        this.vm_writer.writePush("constant", this.tokenizer.intVal);
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         break;
       }
       case ("STRING_CONST"): {
         // stringConstant
+        // #TODO: stringConstant übersetzen
         this.write("<stringConstant> " + this.tokenizer.current_token + " </stringConstant> \n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         break;
@@ -583,6 +586,16 @@ export default class CompilationEngine {
         if (["true", "false", "null", "this"].includes(this.tokenizer.current_token)) {
           // keyword constant
           this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
+          if (this.tokenizer.keyWord === 'true') {
+            this.vm_writer.writePush("constant", -1);
+          }
+          else if (this.tokenizer.keyWord === 'false') {
+            this.vm_writer.writePush("constant", 0);
+          }
+          else if (this.tokenizer.keyWord === 'this') {
+            this.vm_writer.writePush("pointer", 0); // #TODO: soll this so ausgewertet werden?
+          }
+          // #TODO: null übersetzen
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
         else throw new Error("term: ungültiges Keyword")
@@ -610,12 +623,19 @@ export default class CompilationEngine {
           }
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           this.compileTerm();
+          if (this.tokenizer.current_token === '~') {
+            this.vm_writer.writeArithmetic("NOT");
+          }
+          else {
+            this.vm_writer.writeArithmetic("NEG");
+          }
         }
         else throw new Error("term: ungültiges Zeichen")
         break;
       }
       case ("IDENTIFIER"): {
         // subroutineCall ODER varName ODER varName[expression]
+        let varName: string[] = [this.tokenizer.current_token!];
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
@@ -624,12 +644,14 @@ export default class CompilationEngine {
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           if (this.tokenizer.tokenType === 'IDENTIFIER') {
             this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+            varName.push(this.tokenizer.current_token);
             if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           }
           else throw new Error("term: ungültiger subroutineName oder varName")
         }
         // wenn [ -> expression
         if (this.tokenizer.current_token === '[') {
+          // #TODO: Arrayzugriff übersetzen
           this.write("<symbol> [ </symbol>\n")
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           this.compileExpression()
@@ -637,11 +659,14 @@ export default class CompilationEngine {
           this.write("<symbol> ] </symbol>\n")
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         }
-        // wenn ( -> subroutineCall !!!muss vorn gekürzt werden!!!
+        // wenn ( -> subroutineCall
         else if (this.tokenizer.current_token === '(') {
           this.compileSubroutineCallPart2();
         }
         // wenn nichts -> varName (nichts mehr zu tun)
+        else {
+          // #TODO: Zugriff auf Variable übersetzen
+        }
         break;
       }
     }
