@@ -330,7 +330,11 @@ export default class CompilationEngine {
     this.write("</statements>\n");
   }
 
-  compileSubroutineCallPart2(): void {
+  /**
+   * Kompiliert einen Funktionsaufruf ab den Klammern für die Argumente
+   * returns: wie viele Argumente die Funktion braucht
+   */
+  compileSubroutineCallPart2(): number {
 
     // (
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '(') throw new Error("subroutineCall: öffnende Klammer erwartet")
@@ -338,7 +342,7 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     // expressionList
-    this.compileExpressionList();
+    var argCnt: number = this.compileExpressionList();
 
     // )
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != ')') {
@@ -348,6 +352,7 @@ export default class CompilationEngine {
     this.write("<symbol> ) </symbol>\n");
 
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    return argCnt;
   }
 
   /** Kompiliert ein `do`-Statement. */
@@ -674,18 +679,24 @@ export default class CompilationEngine {
           this.write("<symbol> . </symbol>\n");
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
-          var kind = this.symbol_tabel.kindOf(varName);
-          if (kind != 'NONE') {
-            // Methodenaufruf --> this pushen
-            this.vm_writer.writePush(this.getSegmentFromKind(kind), this.symbol_tabel.indexOf(varName));
-          }
-
           if (this.tokenizer.tokenType === 'IDENTIFIER') {
-            this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+            var subroutineName = this.tokenizer.current_token;
+            this.write("<identifier> " + subroutineName + " </identifier>\n")
             if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+            var kind = this.symbol_tabel.kindOf(varName);
+            var originClass = varName;
+            var argCnt = 0;
+            if (kind != 'NONE') {
+              // Methodenaufruf --> this pushen
+              argCnt++;
+              this.vm_writer.writePush(this.getSegmentFromKind(kind), this.symbol_tabel.indexOf(varName));
+              originClass = this.symbol_tabel.typeOf(varName);
+            }
           }
           else throw new Error("term: ungültiger subroutineName oder varName")
-          this.compileSubroutineCallPart2();
+          argCnt += this.compileSubroutineCallPart2(); // pusht alle Funktionsargumente
+
+          this.vm_writer.writeCall(originClass + '.' + subroutineName, argCnt);
         }
         // wenn [ -> expression
         else if (this.tokenizer.current_token === '[') {
@@ -712,16 +723,20 @@ export default class CompilationEngine {
   }
 
   /** Kompiliert eine möglicherweise leere, durch Kommas getrennte Ausdrucksliste. */
-  compileExpressionList(): void {
+  compileExpressionList(): number {
+    var cnt: number = 0
     this.write("<expressionList>\n");
     if (this.tokenizer.current_token != ")") {
       this.compileExpression();
+      cnt++;
       while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol === ',') {
         this.write("<symbol> , </symbol>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
         this.compileExpression();
+        cnt++;
       }
     }
     this.write("</expressionList>\n")
+    return cnt;
   }
 }
