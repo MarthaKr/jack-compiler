@@ -615,6 +615,7 @@ export default class CompilationEngine {
         }
         else if (['~', '-'].includes(this.tokenizer.symbol)) {
           // unaryOp term
+          var unaryOpSymbol = this.tokenizer.current_token;
           if (this.tokenizer.current_token === '~') {
             this.write('<symbol> ~ </symbol>\n')
           }
@@ -623,7 +624,7 @@ export default class CompilationEngine {
           }
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           this.compileTerm();
-          if (this.tokenizer.current_token === '~') {
+          if (unaryOpSymbol === '~') {
             this.vm_writer.writeArithmetic("NOT");
           }
           else {
@@ -635,11 +636,11 @@ export default class CompilationEngine {
       }
       case ("IDENTIFIER"): {
         // subroutineCall ODER varName ODER varName[expression]
-        let varName: string[] = [this.tokenizer.current_token!];
+        //let varName: string[] = [this.tokenizer.current_token!];
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
-        while (this.tokenizer.current_token === '.') {
+        /*while (this.tokenizer.current_token === '.') {
           this.write('<symbol> . </symbol>\n')
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           if (this.tokenizer.tokenType === 'IDENTIFIER') {
@@ -648,9 +649,20 @@ export default class CompilationEngine {
             if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
           }
           else throw new Error("term: ungültiger subroutineName oder varName")
+        }*/
+        // wenn . -> subroutineCall einer anderen Klasse
+        if (this.tokenizer.current_token === '.') {
+          this.write("<symbol> . </symbol>\n");
+          if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          if (this.tokenizer.tokenType === 'IDENTIFIER') {
+            this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+            if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+          }
+          else throw new Error("term: ungültiger subroutineName oder varName")
+          this.compileSubroutineCallPart2();
         }
         // wenn [ -> expression
-        if (this.tokenizer.current_token === '[') {
+        else if (this.tokenizer.current_token === '[') {
           // #TODO: Arrayzugriff übersetzen
           this.write("<symbol> [ </symbol>\n")
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
