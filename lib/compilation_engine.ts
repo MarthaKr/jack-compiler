@@ -1,6 +1,10 @@
 import JackTokenizer from './jack_tokenizer.ts';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import VMWriter from './vm_writer.ts';
+import SymbolTable from './symbol_table.ts';
+
+type Segment = 'constant' | 'argument' | 'local' | 'static' | 'this' | 'that' | 'pointer' | 'temp';
+type Kind = 'STATIC' | 'FIELD' | 'ARG' | 'VAR';
 
 /**
  * Parst ein Jack-Programm und schreibt seine Struktur als XML in eine Datei.
@@ -15,6 +19,7 @@ export default class CompilationEngine {
   tokenizer: JackTokenizer;
   output_file: string;
   vm_writer: VMWriter;
+  symbol_tabel: SymbolTable;
 
   /**
    * Erstellt eine Compilation Engine.
@@ -27,6 +32,7 @@ export default class CompilationEngine {
     this.tokenizer = new JackTokenizer(input_file);
     this.output_file = output_file;
     this.vm_writer = new VMWriter(output_file);
+    this.symbol_tabel = new SymbolTable();
 
     writeFileSync(this.output_file, ''); // Erstelle (und leere) die Datei
     if (this.tokenizer.hasMoreTokens()) {
@@ -61,6 +67,17 @@ export default class CompilationEngine {
       throw new Error("type erwartet.")
     }
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+  }
+
+  private getSegmentFromKind(kind: Kind): Segment {
+    if (kind === 'ARG') {
+      return 'argument';
+    }
+    else if (kind === 'VAR') return 'local'
+    else if (kind === 'STATIC') return 'static'
+    else {
+      return 'this';
+    }
   }
 
   private isType(): boolean {
@@ -637,6 +654,7 @@ export default class CompilationEngine {
       case ("IDENTIFIER"): {
         // subroutineCall ODER varName ODER varName[expression]
         //let varName: string[] = [this.tokenizer.current_token!];
+        let varName: string = this.tokenizer.current_token!;
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
@@ -652,8 +670,16 @@ export default class CompilationEngine {
         }*/
         // wenn . -> subroutineCall einer anderen Klasse
         if (this.tokenizer.current_token === '.') {
+          // #TODO: Methoden / Funktionsaufruf übersetzen
           this.write("<symbol> . </symbol>\n");
           if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+          var kind = this.symbol_tabel.kindOf(varName);
+          if (kind != 'NONE') {
+            // Methodenaufruf --> this pushen
+            this.vm_writer.writePush(this.getSegmentFromKind(kind), this.symbol_tabel.indexOf(varName));
+          }
+
           if (this.tokenizer.tokenType === 'IDENTIFIER') {
             this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
             if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
