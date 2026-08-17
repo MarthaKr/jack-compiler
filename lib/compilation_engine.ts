@@ -91,6 +91,7 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("class: Klassenname erwartet.");
+    var className = this.tokenizer.identifier;
     this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
@@ -105,7 +106,7 @@ export default class CompilationEngine {
     }
     while (this.tokenizer.tokenType == 'KEYWORD' &&
       ['CONSTRUCTOR', 'FUNCTION', 'METHOD'].includes(this.tokenizer.keyWord)) {
-      this.compileSubroutine();
+      this.compileSubroutine(className);
     }
     if (this.tokenizer.tokenType != 'SYMBOL' || this.tokenizer.symbol != '}') throw new Error("class: Klammer '}' erwartet.");
     this.write("<symbol> } </symbol>\n");
@@ -144,8 +145,9 @@ export default class CompilationEngine {
   }
 
   /** Kompiliert eine vollständige `constructor`-, `function`- oder `method`-Deklaration. */
-  compileSubroutine(): void {
-    // TODO: Folge der Grammatik für `subroutineDec`.
+  compileSubroutine(className: string): void {
+
+    this.symbol_tabel.startSubroutine();
 
     this.write("<subroutineDec>\n");
     this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n")
@@ -163,6 +165,7 @@ export default class CompilationEngine {
     if (this.tokenizer.tokenType != 'IDENTIFIER') {
       throw new Error("SubroutineDec: kein subroutineName")
     }
+    var subroutineName = this.tokenizer.current_token;
     this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
 
     // (
@@ -194,11 +197,15 @@ export default class CompilationEngine {
     // call varDec
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance
     //console.log(this.tokenizer.current_token);
+    var localVarCnt = 0;
     while (this.tokenizer.current_token === 'var') {
       //console.log("compileVarDec");
-      this.compileVarDec()
+      localVarCnt += this.compileVarDec()
       //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
     }
+
+    console.log("generate code for function: ", className + '.' + subroutineName, localVarCnt)
+    this.vm_writer.writeFunction(className + '.' + subroutineName, localVarCnt);
 
     // statements
     this.compileStatements()                                      // statements
@@ -254,10 +261,12 @@ export default class CompilationEngine {
     this.write("</parameterList>\n")
   }
 
-  /** Kompiliert eine lokale `var`-Deklaration. */
-  compileVarDec(): void {
-    // TODO: Folge der Grammatik für `varDec`.        // muss advance!!
+  /** Kompiliert eine lokale `var`-Deklaration. 
+   * returns: Anzahl der lokalen Variablen in dieser Zeile
+  */
+  compileVarDec(): number {
 
+    var cnt = 1;
     this.write("<varDec>\n");
     // 'var'
     this.write("<keyword> var </keyword>\n")
@@ -272,7 +281,7 @@ export default class CompilationEngine {
       this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
     }
     else {
-      console.log(this.tokenizer.current_token)
+      //console.log(this.tokenizer.current_token)
       throw new Error("varDec: identifier erwartet")
     }
 
@@ -282,6 +291,7 @@ export default class CompilationEngine {
       this.write("<symbol> , </symbol>\n")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
       if (this.tokenizer.tokenType === 'IDENTIFIER') {
+        cnt++;
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
       }
       else throw new Error("varDec: identifier nach Komma erwartet")
@@ -296,6 +306,7 @@ export default class CompilationEngine {
     else throw new Error("varDec: Semikolon fehlt");
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     this.write("</varDec>\n")
+    return cnt;
   }
 
 
