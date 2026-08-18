@@ -65,7 +65,7 @@ export default class VMWriter {
   /** Schreibt den Beginn einer Funktion. */
   writeFunction(name: string, nLocals: number): void {
     // TODO
-    this.vm_code.push("function " + name + " " + nLocals.toString)
+    this.vm_code.push("function " + name + " " + nLocals.toString())
   }
 
   /** Schreibt einen return-Befehl. */
