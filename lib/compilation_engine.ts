@@ -44,7 +44,7 @@ export default class CompilationEngine {
     appendFileSync(this.output_file, text);
   }
 
-  private compileType(): void {
+  private compileType(): string {
     if (this.tokenizer.tokenType == 'KEYWORD') {
       switch (this.tokenizer.keyWord) {
         case 'INT':
@@ -66,7 +66,9 @@ export default class CompilationEngine {
     else {
       throw new Error("type erwartet.")
     }
+    var type = this.tokenizer.tokenType;
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+    return type;
   }
 
   private getSegmentFromKind(kind: Kind): Segment {
@@ -204,7 +206,7 @@ export default class CompilationEngine {
       //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance(); // advance  ?
     }
 
-    console.log("generate code for function: ", className + '.' + subroutineName, localVarCnt)
+    //console.log("generate code for function: ", className + '.' + subroutineName, localVarCnt)
     this.vm_writer.writeFunction(className + '.' + subroutineName, localVarCnt);
 
     // statements
@@ -223,7 +225,6 @@ export default class CompilationEngine {
 
   /** Kompiliert eine möglicherweise leere Parameterliste. */
   compileParameterList(): void {
-    // TODO: Implementiere die möglicherweise leere, komma-getrennte Liste.
     // zeigt am Anfang hinter die erste Klammer, danach auf letzte Klammer
     this.write("<parameterList>\n")
     if (this.tokenizer.tokenType === "KEYWORD") {
@@ -231,13 +232,17 @@ export default class CompilationEngine {
 
       // Datentyp
       if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
-      this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
+      var current_type = this.tokenizer.current_token!;
+      this.write("<keyword> " + current_type + " </keyword>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
       // Parameterbezeichnung
       if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
-      this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
+      var current_var_name = this.tokenizer.identifier;
+      this.write("<identifier> " + current_var_name + " </identifier>\n");
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+      this.symbol_tabel.define(current_var_name, current_type, 'ARG');
 
       // weitere Parameter
       while (this.tokenizer.tokenType === 'SYMBOL' && this.tokenizer.symbol == ',') { // Komma
@@ -247,13 +252,17 @@ export default class CompilationEngine {
 
         // Datentyp
         if (!this.isType() && this.tokenizer.current_token != "void") throw new Error("parameterList: Datentyp fehlt");
+        current_type = this.tokenizer.current_token!;
         this.write("<keyword> " + this.tokenizer.current_token + " </keyword>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
         // Parameterbezeichnung
         if (this.tokenizer.tokenType != 'IDENTIFIER') throw new Error("parameterList: Parametername fehlt");
+        current_var_name = this.tokenizer.identifier;
         this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
         if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
+
+        this.symbol_tabel.define(current_var_name, current_type, 'ARG');
       }
 
     }
@@ -273,12 +282,13 @@ export default class CompilationEngine {
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
 
     // type
-    this.compileType();
+    var current_type = this.compileType();
 
     // varName
     //if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
     if (this.tokenizer.tokenType === 'IDENTIFIER') {
       this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+      this.symbol_tabel.define(this.tokenizer.identifier, current_type, 'VAR')
     }
     else {
       //console.log(this.tokenizer.current_token)
@@ -293,6 +303,7 @@ export default class CompilationEngine {
       if (this.tokenizer.tokenType === 'IDENTIFIER') {
         cnt++;
         this.write("<identifier> " + this.tokenizer.current_token + " </identifier>\n")
+        this.symbol_tabel.define(this.tokenizer.identifier, current_type, 'VAR')
       }
       else throw new Error("varDec: identifier nach Komma erwartet")
       if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();         // advance
