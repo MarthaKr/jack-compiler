@@ -45,6 +45,7 @@ export default class CompilationEngine {
   }
 
   private compileType(): string {
+    var type: string;
     if (this.tokenizer.tokenType == 'KEYWORD') {
       switch (this.tokenizer.keyWord) {
         case 'INT':
@@ -59,14 +60,15 @@ export default class CompilationEngine {
         default:
           throw new Error("type: ungültiges Keyword.")
       }
+      type = this.tokenizer.keyWord
     }
     else if (this.tokenizer.tokenType == 'IDENTIFIER') {
       this.write("<identifier> " + this.tokenizer.identifier + " </identifier>\n");
+      type = this.tokenizer.identifier;
     }
     else {
       throw new Error("type erwartet.")
     }
-    var type = this.tokenizer.tokenType;
     if (this.tokenizer.hasMoreTokens()) this.tokenizer.advance();
     return type;
   }
@@ -718,6 +720,8 @@ export default class CompilationEngine {
           else throw new Error("term: ungültiger subroutineName oder varName")
           argCnt += this.compileSubroutineCallPart2(); // pusht alle Funktionsargumente
 
+          console.log("Symboltabelle: ")
+          console.log(this.symbol_tabel.subroutineTable);
           this.vm_writer.writeCall(originClass + '.' + subroutineName, argCnt);
         }
         // wenn [ -> expression
